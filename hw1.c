@@ -212,6 +212,7 @@ static void threetothree(const char *filename, const char *output) {
     
     while (fgetc(fh) != '\n');
     
+    // read data
     fread(buffer, lSize, 1, fh);
     
     fclose(fh);
@@ -310,7 +311,6 @@ static void threetosix(const char *filename, const char *output) {
     
     while (fgetc(fh) != '\n');
     
-    //fread(buffer, lSize, 1, fh);
     
     
     
@@ -322,18 +322,12 @@ static void threetosix(const char *filename, const char *output) {
         fprintf(stderr, "Unable to allocate memory\n");
         exit(1);
     }
+
+    
+    
+    
     
     // read data
-//    if (fread(temp->data, 3 * temp->width, temp->height, fh) != temp->height) {
-//        fprintf(stderr, "Error loading image \n");
-//        exit(1);
-//    }
-    
-    
-    
-    
-    
-    // JAMES ISH
     int tracker = 0;
     int j = 0;
     int k;
@@ -373,17 +367,7 @@ static void threetosix(const char *filename, const char *output) {
     
     ungetc(c, fh);
     
-    
-    
-    
-    
-    
-    
 
-    
-    //fread(temp->data, sizeof(RGBApixel), temp->width * temp->height, fh);
-    
-    
     
     fclose(fh);
     
@@ -402,13 +386,9 @@ static void threetosix(const char *filename, const char *output) {
     // rgb
     fprintf(fh, "%d\n", RGB_NUMBER);
     
+
+    
     // write data
-    //fprintf(fh, "%s\n", buffer);
-    
-    //fwrite(temp->data, sizeof(RGBApixel), temp->width * temp->height, fh);
-    
-    
-    //JAMES ISH
     int tracker2 = 0;
     for (int q = 0; q < sizeof(RGBApixel) * temp->width * temp->height;q++){
         tracker2++;
@@ -431,12 +411,160 @@ static void threetosix(const char *filename, const char *output) {
 
 }
 
+static void sixtothree(const char *filename, const char *output) {
+    
+    char *buffer;
+    Image *temp;
+    FILE *fh;
+    int com, rgb_num;
+    long lSize;
+    
+    // open file
+    fh = fopen(filename, "rb");
+    if (!fh) {
+        fprintf(stderr, "Error opening file\n");
+        exit(1);
+    }
+    
+    // find file size
+    fseek(fh , 0L , SEEK_END);
+    lSize = ftell(fh);
+    rewind(fh);
+    buffer = malloc(lSize);
+    
+    // read image
+    if (!fgets(buffer, sizeof(buffer), fh)) {
+        perror(filename);
+        exit(1);
+    }
+    
+    // make sure ppm 3
+    if (buffer[0] != 'P' || buffer[1] != '6') {
+        fprintf(stderr, "Must be PPM6\n");
+        exit(1);
+    }
+    
+    // memory allocation
+    temp = (Image *)malloc(sizeof(Image));
+    if (!temp) {
+        fprintf(stderr, "Error allocating memory\n");
+        exit(1);
+    }
+    
+    // move pointer past comments in ppm file
+    com = getc(fh);
+    while (com == '#') {
+        while (getc(fh) != '\n') ;
+        com = getc(fh);
+    }
+    
+    ungetc(com, fh);
+    
+    // read height and width
+    if (fscanf(fh, "%d %d", &temp->width, &temp->height) != 2) {
+        fprintf(stderr, "Error with image size\n");
+        exit(1);
+    }
+    
+    // read rgb
+    if (fscanf(fh, "%d", &rgb_num) != 1) {
+        fprintf(stderr, "Error reading RGB info\n");
+        exit(1);
+    }
+    
+    // check rgb
+    if (rgb_num != RGB_NUMBER) {
+        fprintf(stderr, "255 RGB only\n");
+        exit(1);
+    }
+    
+    
+    while (fgetc(fh) != '\n');
+    
+    
+    
+    
+    
+    // memory allocation
+    temp->data = (RGBApixel*)malloc(temp->width * temp->height * sizeof(RGBApixel));
+    
+    if (!temp) {
+        fprintf(stderr, "Unable to allocate memory\n");
+        exit(1);
+    }
+    
+    
+    // read data
+    int tracker2 = 0;
+    for (int q = 0; q < sizeof(RGBApixel) * temp->width * temp->height;q++){
+        tracker2++;
+        if(tracker2 == 1){
+            fread(&temp->data[q].r,1,1,fh);
+        }
+        if(tracker2 == 2){
+            fread(&temp->data[q].g,1,1,fh);
+        }
+        if(tracker2 == 3){
+            fread(&temp->data[q].b,1,1,fh);
+            tracker2 = 0;
+        }
+        fprintf(fh, "\n");
+        
+    }
+
+    
+    
+    
+    fclose(fh);
+    
+    fh = fopen(output, "wb");
+    
+    
+    fprintf(fh, "P3\n");
+    
+    // created by
+    fprintf(fh, "# Created by %s\n", AUTHOR);
+    
+    // height and width
+    fprintf(fh, "%d %d\n", temp->width, temp->height);
+    
+    
+    // rgb
+    fprintf(fh, "%d\n", RGB_NUMBER);
+    fprintf(fh, "\n");
+    
+    
+    
+    // write data
+    tracker2 = 0;
+    for (int q = 0; q < sizeof(RGBApixel) * temp->width * temp->height;q++){
+        tracker2++;
+        if(tracker2 == 1){
+            fprintf(fh, "%d", temp->data[q].r);
+        }
+        if(tracker2 == 2){
+            fprintf(fh, "%d", temp->data[q].g);
+        }
+        if(tracker2 == 3){
+            fprintf(fh, "%d", temp->data[q].b);
+            tracker2 = 0;
+        }
+        fprintf(fh, "\n");
+        
+    }
+    
+    fclose(fh);
+    free(buffer);
+    free(temp);
+    
+}
 
 int main() {
 
     //sixtosix("test_in.ppm", "test_out.ppm");
     //threetothree("test3_in.ppm", "test3_out.ppm");
-    threetosix("test3_in.ppm", "test3to6_out.ppm");
+    //threetosix("test3_in.ppm", "test3to6_out.ppm");
+    sixtothree("test_in.ppm", "test6to3_out.ppm");
     
 
 }
