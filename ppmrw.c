@@ -435,7 +435,6 @@ static void sixtothree(const char *filename, const char *output) {
     
     while (fgetc(fh) != '\n');
     
-
     // memory allocation
     temp->data = (RGBApixel*)malloc(temp->width * temp->height * sizeof(RGBApixel));
     
@@ -443,7 +442,6 @@ static void sixtothree(const char *filename, const char *output) {
         fprintf(stderr, "Unable to allocate memory\n");
         exit(1);
     }
-    
     
     // read data
     int tracker2 = 0;
@@ -459,8 +457,7 @@ static void sixtothree(const char *filename, const char *output) {
             fread(&temp->data[q].b,1,1,fh);
             tracker2 = 0;
         }
-        fprintf(fh, "\n");
-        
+        fprintf(fh, "\n");   
     }
 
     fclose(fh);
@@ -474,7 +471,6 @@ static void sixtothree(const char *filename, const char *output) {
     
     // height and width
     fprintf(fh, "%d %d\n", temp->width, temp->height);
-    
     
     // rgb
     fprintf(fh, "%d\n", RGB_NUMBER);
@@ -494,14 +490,12 @@ static void sixtothree(const char *filename, const char *output) {
             fprintf(fh, "%d", temp->data[q].b);
             tracker2 = 0;
         }
-        fprintf(fh, "\n");
-        
+        fprintf(fh, "\n");  
     }
     
     fclose(fh);
     free(buffer);
     free(temp);
-    
 }
 
 int main(int argc, char *argv[]) {
@@ -516,7 +510,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error opening file\n");
         exit(1);
     }
-    
+
     // find file size
     fseek(fh , 0L , SEEK_END);
     lSize = ftell(fh);
@@ -532,7 +526,6 @@ int main(int argc, char *argv[]) {
     fclose(fh);
     
     int choice = atoi(argv[1]);
-    
  
     if (choice == 3 && buffer[1] == '3') {
         threetothree(argv[2], argv[3]);
@@ -546,8 +539,5 @@ int main(int argc, char *argv[]) {
     if (choice == 3 && buffer[1] == '6') {
         sixtothree(argv[2], argv[3]);
     }
-    
-
-    
 
 }
