@@ -17,13 +17,13 @@ typedef struct {
 #define AUTHOR "CBLAZER"
 #define RGB_NUMBER 255
 
+FILE *fh;
+char *buffer;
+Image *temp;
+int com, rgb_num;
+long lSize;
+
 static void sixtosix(const char *filename, const char *output) {
-    
-    char *buffer;
-    Image *temp;
-    FILE *fh;
-    int com, rgb_num;
-    long lSize;
     
     // open file
     fh = fopen(filename, "rb");
@@ -84,10 +84,7 @@ static void sixtosix(const char *filename, const char *output) {
         exit(1);
     }
 
-    
     while (fgetc(fh) != '\n');
-    
-
         
     // memory allocation
     temp->data = (RGBApixel*)malloc(temp->width * temp->height * sizeof(RGBApixel));
@@ -102,23 +99,16 @@ static void sixtosix(const char *filename, const char *output) {
         fprintf(stderr, "Error loading image \n");
         exit(1);
     }
-        
-    
 
-    
     // close file
     fclose(fh);
-    //return temp;
-    
-    
-    
+
     // open file
     fh = fopen(output, "wb");
     if (!fh) {
         fprintf(stderr, "Error opening file\n");
         exit(1);
     }
-    
     
     // magic number
     fprintf(fh, "P6\n");
@@ -128,7 +118,6 @@ static void sixtosix(const char *filename, const char *output) {
     
     // height and width
     fprintf(fh, "%d %d\n", temp->width, temp->height);
-    
     
     // rgb
     fprintf(fh, "%d\n", RGB_NUMBER);
@@ -144,12 +133,6 @@ static void sixtosix(const char *filename, const char *output) {
 
 static void threetothree(const char *filename, const char *output) {
     
-    char *buffer;
-    Image *temp;
-    FILE *fh;
-    int com, rgb_num;
-    long lSize;
-    
     // open file
     fh = fopen(filename, "rb");
     if (!fh) {
@@ -209,7 +192,6 @@ static void threetothree(const char *filename, const char *output) {
         exit(1);
     }
     
-    
     while (fgetc(fh) != '\n');
     
     // read data
@@ -219,7 +201,6 @@ static void threetothree(const char *filename, const char *output) {
     
     fh = fopen(output, "wb");
     
-    
     fprintf(fh, "P3\n");
     
     // created by
@@ -227,7 +208,6 @@ static void threetothree(const char *filename, const char *output) {
     
     // height and width
     fprintf(fh, "%d %d\n", temp->width, temp->height);
-    
     
     // rgb
     fprintf(fh, "%d\n", RGB_NUMBER);
@@ -242,12 +222,6 @@ static void threetothree(const char *filename, const char *output) {
 }
 
 static void threetosix(const char *filename, const char *output) {
-
-    char *buffer;
-    Image *temp;
-    FILE *fh;
-    int com, rgb_num;
-    long lSize;
     
     // open file
     fh = fopen(filename, "rb");
@@ -308,12 +282,7 @@ static void threetosix(const char *filename, const char *output) {
         exit(1);
     }
     
-    
     while (fgetc(fh) != '\n');
-    
-    
-    
-    
     
     // memory allocation
     temp->data = (RGBApixel*)malloc(temp->width * temp->height * sizeof(RGBApixel));
@@ -324,9 +293,6 @@ static void threetosix(const char *filename, const char *output) {
     }
 
     
-    
-    
-    
     // read data
     int tracker = 0;
     int j = 0;
@@ -334,7 +300,6 @@ static void threetosix(const char *filename, const char *output) {
     int i = 0;
     int c;
     char tempbuffer[4];
-    
     
     while((c = fgetc(fh)) != EOF ){
         
@@ -367,12 +332,9 @@ static void threetosix(const char *filename, const char *output) {
     
     ungetc(c, fh);
     
-
-    
     fclose(fh);
     
     fh = fopen(output, "wb");
-    
     
     fprintf(fh, "P6\n");
     
@@ -385,8 +347,6 @@ static void threetosix(const char *filename, const char *output) {
     
     // rgb
     fprintf(fh, "%d\n", RGB_NUMBER);
-    
-
     
     // write data
     int tracker2 = 0;
@@ -413,11 +373,6 @@ static void threetosix(const char *filename, const char *output) {
 
 static void sixtothree(const char *filename, const char *output) {
     
-    char *buffer;
-    Image *temp;
-    FILE *fh;
-    int com, rgb_num;
-    long lSize;
     
     // open file
     fh = fopen(filename, "rb");
@@ -438,7 +393,7 @@ static void sixtothree(const char *filename, const char *output) {
         exit(1);
     }
     
-    // make sure ppm 3
+    // make sure ppm 6
     if (buffer[0] != 'P' || buffer[1] != '6') {
         fprintf(stderr, "Must be PPM6\n");
         exit(1);
@@ -478,13 +433,9 @@ static void sixtothree(const char *filename, const char *output) {
         exit(1);
     }
     
-    
     while (fgetc(fh) != '\n');
     
-    
-    
-    
-    
+
     // memory allocation
     temp->data = (RGBApixel*)malloc(temp->width * temp->height * sizeof(RGBApixel));
     
@@ -512,13 +463,9 @@ static void sixtothree(const char *filename, const char *output) {
         
     }
 
-    
-    
-    
     fclose(fh);
     
     fh = fopen(output, "wb");
-    
     
     fprintf(fh, "P3\n");
     
@@ -532,8 +479,6 @@ static void sixtothree(const char *filename, const char *output) {
     // rgb
     fprintf(fh, "%d\n", RGB_NUMBER);
     fprintf(fh, "\n");
-    
-    
     
     // write data
     tracker2 = 0;
@@ -559,12 +504,50 @@ static void sixtothree(const char *filename, const char *output) {
     
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    
+    if (argc != 4){
+        printf("usage: ppmrw 3 input.ppm output.ppm");
+        return(1);
+    }
+    
+    fh = fopen(argv[2], "rb");
+    if (!fh) {
+        fprintf(stderr, "Error opening file\n");
+        exit(1);
+    }
+    
+    // find file size
+    fseek(fh , 0L , SEEK_END);
+    lSize = ftell(fh);
+    rewind(fh);
+    buffer = malloc(lSize);
+    
+    // read image
+    if (!fgets(buffer, sizeof(buffer), fh)) {
+        perror(argv[2]);
+        exit(1);
+    }
+    
+    fclose(fh);
+    
+    int choice = atoi(argv[1]);
+    
+ 
+    if (choice == 3 && buffer[1] == '3') {
+        threetothree(argv[2], argv[3]);
+    }
+    if (choice == 6 && buffer[1] == '3') {
+        threetosix(argv[2], argv[3]);
+    }
+    if (choice == 6 && buffer[1] == '6') {
+        sixtosix(argv[2], argv[3]);
+    }
+    if (choice == 3 && buffer[1] == '6') {
+        sixtothree(argv[2], argv[3]);
+    }
+    
 
-    //sixtosix("test_in.ppm", "test_out.ppm");
-    //threetothree("test3_in.ppm", "test3_out.ppm");
-    //threetosix("test3_in.ppm", "test3to6_out.ppm");
-    sixtothree("test_in.ppm", "test6to3_out.ppm");
     
 
 }
